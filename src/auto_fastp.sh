@@ -19,19 +19,15 @@ n_files=$(( ${#files[@]} ))
 # Function to execute fastp for a pair
 run_fastp() {
     # Arguments:
-    #   -i/-I: Read 1 and Read 2 of pair end files ($1/$2)
-    #   -o/-O: Trimmed output files sufix, prefix is "clean_" ($3/$4)
-    #   --adapter_sequence/--adapter_sequence_r2: An adapter secuence to be found 
-    #                                             and deleted when files are processed
-    #   --trim_front1/--trim_front2: Number of bases to be trimmed in the front of each read
-    #   --detect_adapter_for_pe: Detect and delete common adapters
-    #   --trim_poly_g: Trim sequence errors (Common in the platform used for this fastq)
+    #   -i: Read file ($1)
+    #   -o: Output file name ($2)
+    #   --trim_front1: Number of bases to be trimmed in the front of each read
+    #   --trim_poly_g: Trim g sequence errors
+    #   --trim_poly_x: Trim x sequence errors
     #   --l: Minimum length for read after trimming
     fastp -i "$1" \
           -o "$2" \
           --trim_front1 12 \
-          -D \
-          --dup_calc_accuracy 5 \
           --trim_poly_g \
           --trim_poly_x -l 50
 }
@@ -39,19 +35,11 @@ run_fastp() {
 export -f run_fastp
 
 # Adds an "/" in case the path does not contain one, and keeps only one in the other case
-# ../output/dir -> ../output/dir/
-# /path/outdir/ -> /path/outdir/
 out_dir="${2%/}/"
 
-# For each do ... until i is less than the number of elements in the array "files"
-# starting with i = 0
 for (( i=0; i<${#files[@]}; i+=1 )); do
-#                           ^^^ Pass to the next 
-# The echo send 4 strings, the first two are the path of the files fastq
-# the next two are only the names of those files (deletes the */ part keeps the name)
+# The echo send 2 strings
+# input_file
+# output_file
     echo "${files[$i]} ${out_dir}${files[$i]##*/}" 
 done | parallel -j "$n_files" --colsep ' ' run_fastp  
-#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ For each (separated by spaces) execute the function
-# By this way each fastp is run in a separate theread, concurrency at it most
-
-

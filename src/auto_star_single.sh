@@ -8,8 +8,8 @@
 #   ./auto_star_single.sh ../data/trimmed_fastqs ../results/star/single_end
 
 # Same principle as `auto_fastp.sh` and `auto_hisat2.sh` and `auto_hisat2_pe.sh`
-# Create an array of the names that match: clean_*_1.fastq
-mapfile -t files < <(find "$1" -maxdepth 1 -type f -name "clean_*_1.fastq" | sort)
+# Create an array of the names that match: *.fastq
+mapfile -t files < <(find "$1" -maxdepth 1 -type f -name "*.fastq" | sort)
 
 # Count how many read_files are
 n_files=$(( ${#files[@]} ))
