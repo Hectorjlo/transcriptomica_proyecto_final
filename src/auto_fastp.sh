@@ -28,12 +28,12 @@ run_fastp() {
     #   --trim_poly_g: Trim sequence errors (Common in the platform used for this fastq)
     #   --l: Minimum length for read after trimming
     fastp -i "$1" \
-          -o clean_$2 \
+          -o "$2" \
           --trim_front1 12 \
           -D \
           --dup_calc_accuracy 5 \
           --trim_poly_g \
-          --trim_poly_x --poly_x_min_len -l 50
+          --trim_poly_x -l 50
 }
 # Export a function (-f) to the environment, enables the call to the function
 export -f run_fastp
