@@ -12,7 +12,7 @@
 # Carga de las librerías necesarias para el análisis
 # Suprime Warnings para una salida stdout más limpia
 suppressWarnings(
-    suppressPackconditionStartupMessconditions({
+    suppressPackageStartupMessages({
         library(DESeq2)
         library(ggplot2)
         library(ComplexHeatmap)
@@ -21,6 +21,7 @@ suppressWarnings(
         library(edgeR)
         library(circlize)
         library(optparse)
+        library(ggrepel)
     })
 )
 
@@ -245,14 +246,14 @@ print("Nombres disponibles para contrastes:")
 print(resultsNames(dds))
 
 # Crea el contraste
-contrasts <- makeContrasts(NDC_vs_IPF = conditionNDC - conditionIPF,
+contrasts <- makeContrasts(IPF_vs_NDC = conditionIPF - conditionNDC,
     levels = design
 )
 
 # Realiza el análisis de expresión diferencial
 ## En este caso al ser solo uno es directo
 ## Se usa el contraste comparando conditionm24 vs conditionm3
-res <- results(dds, contrast = contrasts[ ,"NDC_vs_IPF"])
+res <- results(dds, contrast = contrasts[ ,"IPF_vs_NDC"])
 # Añade Gene name
 res$Gene_name <- gene_name_map[rownames(res), ]
 
@@ -311,25 +312,27 @@ write.table(
 
 # Forma el "volcano plot"
 # Asigna colores
-volcano_plot_colors <- c("gray", "blue", "red")
+volcano_plot_colors <- c("#d9d9d9", "#e06666", "#93c47d")
 names(volcano_plot_colors) <- c("NO", "DOWN", "UP")
 
 # Añade la columna DE
 res$DE <- "NO"
 res[up, "DE"] <- "UP"
 res[down, "DE"] <- "DOWN"
+res$label <- ifelse(res$padj < 1e-6 & abs(res$log2FoldChange) > 1, res$Gene_name, "")
 
 volcano_plot <- ggplot(
     data = res,
     aes(x = log2FoldChange, y = -log10(padj), col = DE)
 ) +
-    geom_point() +
+    geom_point(alpha = 0.6, size = 2) +
     labs(
-        title = "Volcano plot",
+        title = "IPF contra NDC",
         x = "log2 Expression fold change", 
         y = "-log10 FDR"
     ) + 
     scale_color_manual(values = volcano_plot_colors) +
+    scale_fill_manual(values = volcano_plot_colors) +
     geom_vline(
         xintercept = c(-LogFC, LogFC),
         col = "black",
@@ -337,12 +340,29 @@ volcano_plot <- ggplot(
     ) +
     geom_hline(
         yintercept = -log10(FDR),
-        col = "black",
-        linetype = "longdash"
+        col = "darkgray",
+        linetype = "dashed",
+        linewidth = 0.5
     ) +
-    theme_minimal(
-        base_size = 18,
-        base_line_size = 1
+    theme_light(
+        base_size = 14,
+    ) +
+    theme(
+        plot.title = element_text(hjust = 0.5, face = "plain", size = 16), 
+        panel.background = element_rect(fill = "#f8f9fa"), 
+        legend.position = "bottom",
+        legend.title = element_text(face = "bold")
+    ) + 
+    geom_label_repel(
+        aes(label = label, fill = DE),
+        color = "black",
+        segment.color = "grey50",
+        segment.size = 0.3,
+        box.padding = 0.4,
+        point.padding = 0.3,
+        max.overlaps = 30,
+        show.legend = FALSE,
+        alpha = 0.5
     )
 # Guarda el gráfico de volcán
 ggsave(filename = paste(results_files_dir, "plots/vulcano_plot.png", sep = ""), 
