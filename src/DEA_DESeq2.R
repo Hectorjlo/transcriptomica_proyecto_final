@@ -7,7 +7,7 @@
 
 # Desactiva el dispositivo PDF
 ## Evita generar archivos fuera de los indicados
-pdf(file = NULL)
+# pdf(file = NULL)
 
 # Carga de las librerías necesarias para el análisis
 # Suprime Warnings para una salida stdout más limpia
@@ -24,46 +24,53 @@ suppressWarnings(
     })
 )
 
-# Genera un parseador
-parser <- list(
-    # Obtiene el path de counts o txi
-    make_option(
-        "--counts",
-        type = "character"
-    ),
-    # Obtiene el path del archivo de anotación
-    make_option(
-        "--annotation",
-        type = "character"
-    ),
-    # Obtiene el path del archivo gene_map (Geneid - gene_name) 
-    make_option(
-        "--gene_map",
-        type = "character"
-    ),
-    # Obtiene el path de la carpeta resultados
-    make_option(
-        "--results_dir",
-        type = "character"
-    ),
-    # Bandera para diferenciar si se procesara un objeto txi
-    # o una tabla de conteos
-    make_option(
-        "--from_pseudoalignment",
-        action = "store_true",
-        default = FALSE
-    )
-)
+# # Genera un parseador
+# parser <- list(
+#     # Obtiene el path de counts o txi
+#     make_option(
+#         "--counts",
+#         type = "character"
+#     ),
+#     # Obtiene el path del archivo de anotación
+#     make_option(
+#         "--annotation",
+#         type = "character"
+#     ),
+#     # Obtiene el path del archivo gene_map (Geneid - gene_name) 
+#     make_option(
+#         "--gene_map",
+#         type = "character"
+#     ),
+#     # Obtiene el path de la carpeta resultados
+#     make_option(
+#         "--results_dir",
+#         type = "character"
+#     ),
+#     # Bandera para diferenciar si se procesara un objeto txi
+#     # o una tabla de conteos
+#     make_option(
+#         "--from_pseudoalignment",
+#         action = "store_true",
+#         default = FALSE
+#     )
+# )
 
-# Parsea el objeto para ser accedido por índice
-args <- parse_args(OptionParser(option_list = parser))
+# # Parsea el objeto para ser accedido por índice
+# args <- parse_args(OptionParser(option_list = parser))
 
 # Obten los argumentos del paseo de la CLI
-gene_counts_or_txi_path <- args$counts
-annotacion_file_path <- args$annotation
-gene_name_map_file_path <- args$gene_map
-results_files_dir <- args$results_dir
-from_pseudoalignment <- args$from_pseudoalignment
+# gene_counts_or_txi_path <- args$counts
+# annotacion_file_path <- args$annotation
+# gene_name_map_file_path <- args$gene_map
+# results_files_dir <- args$results_dir
+# from_pseudoalignment <- args$from_pseudoalignment
+
+gene_counts_or_txi_path <- "results/star/feature_counts/count_matrix.tsv"
+annotacion_file_path <- "data/GENCODE_GRCh38.p13_104/gene_id.length.tsv"
+gene_name_map_file_path <- "data/GENCODE_GRCh38.p13_104/gene_id.gene_name.txt"
+results_files_dir <- "results/star/DESeq2"
+from_pseudoalignment <- FALSE
+
 
 ## Para el path de "results" elimina si encuentra a un "/"
 ## y agrega un "/", asegurando una única aparición 
@@ -72,11 +79,6 @@ results_files_dir <- gsub("/*$", "/", results_files_dir)
 # Lee los archivos de anotación y del genemap
 annotation <- read.delim(annotacion_file_path, row.names=1)
 gene_name_map <- read.delim(gene_name_map_file_path, header=FALSE, row.names=1)
-
-# Secuencia ordenada de cabeceras de los datos en procesamiento
-#!
-reordered <- c("male_24m_1", "male_24m_2", "male_24m_4", "male_24m_7",
-                "male_3m_3", "male_3m_5", "male_3m_6")
 
 # Si es un objeto txi
 if (from_pseudoalignment) {
