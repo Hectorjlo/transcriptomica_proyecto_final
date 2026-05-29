@@ -12,7 +12,7 @@
 # Carga de las librerías necesarias para el análisis
 # Suprime Warnings para una salida stdout más limpia
 suppressWarnings(
-    suppressPackageStartupMessages({
+    suppressPackconditionStartupMessconditions({
         library(DESeq2)
         library(ggplot2)
         library(ComplexHeatmap)
@@ -65,7 +65,7 @@ suppressWarnings(
 # results_files_dir <- args$results_dir
 # from_pseudoalignment <- args$from_pseudoalignment
 
-gene_counts_or_txi_path <- "results/star/feature_counts/count_matrix.tsv"
+gene_counts_or_txi_path <- "results/star/feature_counts/counts_matrix.tsv"
 annotacion_file_path <- "data/GENCODE_GRCh38.p13_104/gene_id.length.tsv"
 gene_name_map_file_path <- "data/GENCODE_GRCh38.p13_104/gene_id.gene_name.txt"
 results_files_dir <- "results/star/DESeq2"
@@ -98,23 +98,20 @@ if (from_pseudoalignment) {
 } else { # Si es una tabla de conteos
     # Lee el archivo de conteos
     gene_counts_or_txi <- read.delim(gene_counts_or_txi_path, row.names=1)
-    # Reordena las columnas por edad
-    gene_counts_or_txi <- gene_counts_or_txi[ ,reordered]
 }
 
 # Generar la tabla de metadatos
 # Verifica con colnames(gene_counts_or_txi), comprueba la cabecera de los archivos
 ## Para estos archivos es:
 ## "male_24m_1" "male_24m_2" "male_24m_4" "male_24m_7" "male_3m_3"  "male_3m_5"  "male_3m_6"
-## Por cual, primero crea un factor con el mismo orden que la cabecera en "age"
-age <- factor(c(rep("m24", 4), rep("m3", 3)),
-    levels = c("m3", "m24"))
-## Al igual que otro por "sex" siguiendo la cabecera de "sex"
-sex <- factor(c(rep("male", 7)))
+## Por cual, primero crea un factor con el mismo orden que la cabecera en "condition"
+condition <- factor(c(rep("IPF", 12), rep("NDC", 12)),
+    levels = c("NDC", "IPF"))
+
 ## Además, un factor que por color refleje a cual de los cuatro grupos pertencen
 ## lightblue <- male_3m
 ## blue <- male_24m
-sample_color <- c(rep("blue", 4), rep("lightblue", 3))
+sample_color <- c(rep("lightblue", 12), rep("blue", 12))
 # Si es un objeto txi
 if (from_pseudoalignment) {
     ## Por último los colnames() 
@@ -124,9 +121,9 @@ if (from_pseudoalignment) {
     sample_names <- colnames(gene_counts_or_txi)
 }
 # Con los valores anteriores genera la tabla de metadatos
-meta_data <- data.frame(sample_names, age, sex)
+meta_data <- data.frame(sample_names, condition)
 ## Genera
-##   sample_names age  sex
+##   sample_names condition  sex
 ## 1   male_24m_1 m24 male
 ## 2   male_24m_2 m24 male
 ## 3   male_24m_4 m24 male
@@ -140,7 +137,7 @@ meta_data <- meta_data %>%
         remove_rownames %>% 
         column_to_rownames(var="sample_names") 
 ## Genera
-##            age  sex
+##            condition  sex
 ## male_24m_1 m24 male
 ## male_24m_2 m24 male
 ## male_24m_4 m24 male
@@ -159,11 +156,11 @@ print(ifelse(
 ))
 
 # Crea un objeto de DESeq2 usando los datos anteriores
-# Usa de diseño de matriz a: ~ 0 + age
-## Usando "~ 0 + age", se usa un modelo de medias de grupo
+# Usa de diseño de matriz a: ~ 0 + condition
+## Usando "~ 0 + condition", se usa un modelo de medias de grupo
 ## lo cual permite poder crear los contrastes de comparación
 ## de manera más fina
-formula <- ~ 0 + age
+formula <- ~ 0 + condition
 
 # Si es un objeto txi
 if (from_pseudoalignment) {
@@ -202,7 +199,7 @@ rm(keep)
 # Convierte a vst
 vsd <- vst(dds)
 # Genera el PCA plot
-PCA_plot <- plotPCA(vsd, intgroup = "age") +  
+PCA_plot <- plotPCA(vsd, intgroup = "condition") +  
     theme_minimal(base_size = 18, base_line_size = 1)
 
 # Guarda el gráfico de PCA
@@ -248,19 +245,19 @@ print("Nombres disponibles para contrastes:")
 print(resultsNames(dds))
 
 # Crea el contraste
-contrasts <- makeContrasts(m24_vs_m3 = agem24 - agem3,
+contrasts <- makeContrasts(NDC_vs_IPF = conditionNDC - conditionIPF,
     levels = design
 )
 
 # Realiza el análisis de expresión diferencial
 ## En este caso al ser solo uno es directo
-## Se usa el contraste comparando agem24 vs agem3
-res <- results(dds, contrast = contrasts[ ,"m24_vs_m3"])
+## Se usa el contraste comparando conditionm24 vs conditionm3
+res <- results(dds, contrast = contrasts[ ,"NDC_vs_IPF"])
 # Añade Gene name
 res$Gene_name <- gene_name_map[rownames(res), ]
 
 # Fija los umbrales de "Log Fold Change" y "False Discovery Rate"
-FDR <- 5e-2 # 0.05 FDR
+FDR <- 0.001
 LogFC <- 0.5
 
 # Obten los genes "upregulated" y "downregulated"
@@ -367,9 +364,9 @@ significant <- head(rownames(significant_order), n = 2000)
 z_score_significant <- t(scale(t(log2_tmp[significant, ])))
 
 # Reordena las muestras por edad
-age_order <- order(meta_data$age)
+condition_order <- order(meta_data$condition)
 # Reordena z-score según la edad
-z_score_significant_ordered <- z_score_significant[, age_order]
+z_score_significant_ordered <- z_score_significant[, condition_order]
 
 # Plotea
 heatmap_plot <- Heatmap(
@@ -420,7 +417,7 @@ png(paste(results_files_dir, "plots/heatmap_top20.png", sep = ""),
 draw(top_20_heatmap)
 dev.off()
 
-# Guarda el RDS de res para analisis tipo GSEA/RNAAgeCalc
+# Guarda el RDS de res para analisis tipo GSEA/RNAconditionCalc
 saveRDS(res, file = paste(results_files_dir, "results.rds", sep = ""))
 
 # Cierra dispositivos gráficos
