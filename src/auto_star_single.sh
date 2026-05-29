@@ -7,14 +7,10 @@
 #   ./auto_star_single.sh <input_dir> <output_dir>
 #   ./auto_star_single.sh ../data/trimmed_fastqs ../results/star/single_end
 
-# Same principle as `auto_fastp.sh` and `auto_hisat2.sh` and `auto_hisat2_pe.sh`
-# Create an array of the names that match: *.fastq
 mapfile -t files < <(find "$1" -maxdepth 1 -type f -name "*.fastq" | sort)
 
-# Count how many read_files are
 n_files=$(( ${#files[@]} ))
 
-# Hardcoded function
 run_star() {
     # Arguments
     #   --runMode alignReads: Set STAR to alignment mode
@@ -26,16 +22,32 @@ run_star() {
     #   --runThreadN: Number of threads for STAR execution
     #   --outFilterMultimapNmax: Maximum number of multiple alignments allowed per read, similar to -k in hisat2
     STAR --runMode alignReads \
-         --genomeDir /export/space3/users/silvanac/transcriptomica_2026/indexes/mm39.gencode.M36.star/ \
+         --genomeDir /home/hectorjl/WORKING_DIR/4to/transcriptomica_proyecto_final/data/GENCODE_GRCh38.p13_104/STAR_index \
          --readFilesIn "$1" \
          --outSAMtype SAM \
          --outFileNamePrefix "$2" \
          --outSAMunmapped None \
-         --runThreadN 2 \
+         --runThreadN 8 \
+         --genomeLoad LoadAndKeep \
          --outFilterMultimapNmax 7
 }
 # Export the function, needed for parallel to use it
 export -f run_star
+
+# Define cleanup handler to remove the shared memory genome when the script exits/terminates
+cleanup() {
+    echo "Unloading genome from shared memory..."
+    STAR --runMode alignReads \
+         --genomeDir /home/hectorjl/WORKING_DIR/4to/transcriptomica_proyecto_final/data/GENCODE_GRCh38.p13_104/STAR_index \
+         --genomeLoad Remove
+}
+trap cleanup EXIT
+
+# Pre-load genome into shared memory
+echo "Pre-loading genome into shared memory..."
+STAR --runMode alignReads \
+     --genomeDir /home/hectorjl/WORKING_DIR/4to/transcriptomica_proyecto_final/data/GENCODE_GRCh38.p13_104/STAR_index \
+     --genomeLoad LoadAndExit
 
 # Take the second argument passed to the main call ($2) and remove a "/" adding at the end a "/"
 out_dir="${2%/}/"
@@ -56,4 +68,4 @@ core_name="${core_name%.fastq}"
 #   2nd -> STAR output prefix path
 # These strings are build in the echo
 echo "${files[$i]} ${out_dir}output_${core_name}_"
-done | parallel -j ${n_files} --colsep ' ' run_star
+done | parallel -j 4 --colsep ' ' run_star

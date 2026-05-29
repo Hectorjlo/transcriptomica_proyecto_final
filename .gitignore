@@ -1,3 +1,5 @@
 data/raw_fastqs
 zips*
 data/cleaned_fastqs
+data/GENCODE_GRCh38.p13_104
+results/star/alignments
