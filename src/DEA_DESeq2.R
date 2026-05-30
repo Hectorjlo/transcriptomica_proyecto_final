@@ -5,9 +5,6 @@
 # Uso: Rscript DEA_DESeq2.R <matrix_counts_file> <annotacion_file> <gene_map_file> <result_dir> 
 ###
 
-# Desactiva el dispositivo PDF
-## Evita generar archivos fuera de los indicados
-# pdf(file = NULL)
 
 # Carga de las librerías necesarias para el análisis
 # Suprime Warnings para una salida stdout más limpia
@@ -25,47 +22,7 @@ suppressWarnings(
     })
 )
 
-# # Genera un parseador
-# parser <- list(
-#     # Obtiene el path de counts o txi
-#     make_option(
-#         "--counts",
-#         type = "character"
-#     ),
-#     # Obtiene el path del archivo de anotación
-#     make_option(
-#         "--annotation",
-#         type = "character"
-#     ),
-#     # Obtiene el path del archivo gene_map (Geneid - gene_name) 
-#     make_option(
-#         "--gene_map",
-#         type = "character"
-#     ),
-#     # Obtiene el path de la carpeta resultados
-#     make_option(
-#         "--results_dir",
-#         type = "character"
-#     ),
-#     # Bandera para diferenciar si se procesara un objeto txi
-#     # o una tabla de conteos
-#     make_option(
-#         "--from_pseudoalignment",
-#         action = "store_true",
-#         default = FALSE
-#     )
-# )
-
-# # Parsea el objeto para ser accedido por índice
-# args <- parse_args(OptionParser(option_list = parser))
-
-# Obten los argumentos del paseo de la CLI
-# matrix_counts_path <- args$counts
-# annotacion_file_path <- args$annotation
-# gene_name_map_file_path <- args$gene_map
-# results_files_dir <- args$results_dir
-# from_pseudoalignment <- args$from_pseudoalignment
-
+# Carga los archivos
 matrix_counts_path <- "results/star/feature_counts/counts_matrix.tsv"
 annotacion_file_path <- "results/star/feature_counts/gene_id.gene_length.tsv"
 gene_name_map_file_path <- "data/GENCODE_GRCh38.p13_104/gene_id.gene_name.txt"
@@ -81,18 +38,26 @@ results_files_dir <- gsub("/*$", "/", results_files_dir)
 # Lee los archivos de anotación y del genemap
 annotation <- read.delim(annotacion_file_path, row.names=1)
 gene_name_map <- read.delim(gene_name_map_file_path, header=FALSE, row.names=1)
+# Elimina versión del geneid de ENSEMBL
 rownames(gene_name_map) <- gsub("[.][0-9]+","",rownames(gene_name_map))
 
+# Se cargí la tabla de muestras
 samples_table <- read.delim(samples_table_path)
-# 61 debido a que es la media de AGE
+## Debido a que un dato fué encontrado como NA, pero el PCA de edad
+## mostró que no había un efecto de lote, se decidio tomar la media
+## para asignarle una edad y mantener los datos que ofrece
 samples_table$AGE[is.na(samples_table$AGE)] <- 61
+# Carga la matriz de conteos
 matrix_counts <- read.delim(matrix_counts_path, row.names=1)
+# Elimina versión del ENSEMBL geneid 
 rownames(matrix_counts) <- gsub("[.][0-9]+","",rownames(matrix_counts))
 
+# Elimina la ruta, mantiene el ID de SRR
 run_ids <- sub(".*(SRR[0-9]+).*", "\\1", colnames(matrix_counts))
+# Ordena la tabla de muestras dado el ID de la matriz de conteos
 idx <- match(run_ids, samples_table$Run)
 
-
+# Cambia los nombres para reflejar su origen
 colnames(matrix_counts) <- paste(
   samples_table$diagnosis[idx],
   samples_table$gender[idx],
@@ -101,58 +66,40 @@ colnames(matrix_counts) <- paste(
   sep = "_"
 )
 
+# Ordena por condición
 diagnosis_order <- factor(
   samples_table$diagnosis[idx],
   levels = c("IPF", "NDC")
 )
 
+# Ordena la matriz de conteos dado la condición
 matrix_counts <- matrix_counts[, order(diagnosis_order)]
 
 # Generar la tabla de metadatos
-# Verifica con colnames(matrix_counts), comprueba la cabecera de los archivos
-## Para estos archivos es:
-## "male_24m_1" "male_24m_2" "male_24m_4" "male_24m_7" "male_3m_3"  "male_3m_5"  "male_3m_6"
-## Por cual, primero crea un factor con el mismo orden que la cabecera en "condition"
+## Dado el ordenamiento anterior fue 20 IPF y 14 NDC
 condition <- factor(c(rep("IPF", 20), rep("NDC", 14)),
     levels = c("NDC", "IPF"))
 
+# Crea el factor así como se encuentre "male" o "female" en las columnas 
 sex <- factor(stringr::str_extract(colnames(matrix_counts), "(?<=_)(male|female)(?=_)"),
     levels = c("male", "female"))
 
+# Crea el factor de age así como se encuentra en las columnas
 age <- stringr::str_extract(colnames(matrix_counts), "(?<=_)(\\d+|NA)(?=_)") |>
   as.numeric()
 
-## Además, un factor que por color refleje a cual de los cuatro grupos pertencen
-## lightblue <- male_3m
-## blue <- male_24m
+# Agrega color para distinguir IPF de NDC
 sample_color <- c(rep("blue", 12), rep("lightblue", 12))
 
 sample_names <- colnames(matrix_counts)
 # Con los valores anteriores genera la tabla de metadatos
 meta_data <- data.frame(sample_names, condition, sex, age)
-## Genera
-##   sample_names condition  sex
-## 1   male_24m_1 m24 male
-## 2   male_24m_2 m24 male
-## 3   male_24m_4 m24 male
-## 4   male_24m_7 m24 male
-## 5    male_3m_3  m3 male
-## 6    male_3m_5  m3 male
-## 7    male_3m_6  m3 male
+
 # Elimina la columna "sample_names", pero usa su contenido
 # como nombre de filas
 meta_data <- meta_data %>% 
         remove_rownames %>% 
         column_to_rownames(var="sample_names") 
-## Genera
-##            condition  sex
-## male_24m_1 m24 male
-## male_24m_2 m24 male
-## male_24m_4 m24 male
-## male_24m_7 m24 male
-## male_3m_3   m3 male
-## male_3m_5   m3 male
-## male_3m_6   m3 male
 
 # Verifica que en los nombres de columnas en matrix_counts
 # esten el mismo orden que los nombred de filas en meta_data
@@ -168,9 +115,9 @@ print(ifelse(
 ## Usando "~ 0 + condition", se usa un modelo de medias de grupo
 ## lo cual permite poder crear los contrastes de comparación
 ## de manera más fina
-formula <- ~ 0 + condition
+formula <- ~ 0 + condition + sex + age
 
-
+# Se crea el objeto de DESeq
 dds <- DESeqDataSetFromMatrix(
     countData = round(matrix_counts),
     colData = meta_data,
@@ -195,7 +142,6 @@ rm(keep)
 
 ## Se creará el PCA plot, para ello se debe 
 ## convertir los datos a vst
-# Convierte a vst
 vsd <- vst(dds)
 # Genera el PCA plot de condición
 PCA_condition <- plotPCA(vsd, intgroup = "condition") +  
@@ -276,7 +222,7 @@ contrasts <- makeContrasts(IPF_vs_NDC = conditionIPF - conditionNDC,
 
 # Realiza el análisis de expresión diferencial
 ## En este caso al ser solo uno es directo
-## Se usa el contraste comparando conditionm24 vs conditionm3
+## Se usa el contraste comparando conditionIPF vs conditionNDC
 res <- results(dds, contrast = contrasts[ ,"IPF_vs_NDC"])
 # Añade Gene name
 res$Gene_name <- gene_name_map[rownames(res), ]
@@ -320,7 +266,7 @@ write.table(
     ),
     sep = "\t",
     quote = FALSE,
-    row.names = T
+    row.names = TRUE
 )
 write.table(
     res[down, ],
@@ -331,7 +277,7 @@ write.table(
     ),
     sep = "\t",
     quote = FALSE,
-    row.names = T
+    row.names = TRUE
 )
 
 # Forma el "volcano plot"
@@ -407,14 +353,14 @@ significant <- head(rownames(significant_order), n = 2000)
 # Calcula el z-score
 z_score_significant <- t(scale(t(log2_tmp[significant, ])))
 
-# Reordena las muestras por edad
+# Reordena las muestras por condición
 condition_order <- order(meta_data$condition)
-# Reordena z-score según la edad
+# Reordena z-score según la condición
 z_score_significant_ordered <- z_score_significant[, condition_order]
 
 # Plotea
 heatmap_plot <- Heatmap(
-    z_score_significant,
+    z_score_significant_ordered,
     cluster_rows = TRUE,
     cluster_columns = FALSE, 
     show_row_names = FALSE,
@@ -423,7 +369,7 @@ heatmap_plot <- Heatmap(
     column_title = "Heatmap all",
     column_labels = colnames(z_score_significant_ordered),
     col = colorRamp2(c(-2, -1, 0, 1, 2), 
-        c("#07f900", "#007500", "#000000", "#750b00", "#ff2500"))
+        c("#ff2500", "#750b00", "#000000", "#007500", "#07f900"))
 )
 # Guarda el mapa de calor
 png(paste(results_files_dir, "plots/heatmap_all.png", sep = ""), 
@@ -431,34 +377,36 @@ png(paste(results_files_dir, "plots/heatmap_all.png", sep = ""),
 draw(heatmap_plot)
 dev.off()
 
-# Formar Heatmap top20
-significant <- head(rownames(significant_order), n = 20)
+# Formar Heatmap top30
+significant <- head(rownames(significant_order), n = 30)
 
-# Guardar la tabla de los top 20 genes significativos
+# Guardar la tabla de los top 30 genes significativos
 write.table(
     significant_order[significant, ],
-    file = paste(results_files_dir, "DEG_top20_table.tsv", sep = ""),
+    file = paste(results_files_dir, "DEG_top30_table.tsv", sep = ""),
     sep = "\t",
     quote = FALSE,
     row.names = TRUE
 )
 
-z_score_top_20 <- t(scale(t(log2_tmp[significant, ])))
-top_20_heatmap <- Heatmap(
-    z_score_top_20,
-    cluster_rows = T, 
-    cluster_columns = F, 
-    row_labels = gene_name_map[rownames(z_score_top_20), ], 
+z_score_top_30 <- t(scale(t(log2_tmp[significant, ])))
+z_score_top_30_ordered <- z_score_top_30[, condition_order]
+top_30_heatmap <- Heatmap(
+    z_score_top_30_ordered,
+    cluster_rows = TRUE, 
+    cluster_columns = FALSE, 
+    row_labels = gene_name_map[rownames(z_score_top_30_ordered), ], 
+    column_labels = colnames(z_score_top_30_ordered),
     name = "Z-score", 
     km = 2, 
-    column_title = "Top 20 significant genes",
+    column_title = "Top 30 significant genes",
     col = colorRamp2(c(-2, -1, 0, 1, 2), 
-        c("#07f900", "#007500", "#000000", "#750b00", "#ff2500"))
+        c("#ff2500", "#750b00", "#000000", "#007500", "#07f900"))
 )
 # Guarda el mapa de calor
-png(paste(results_files_dir, "plots/heatmap_top20.png", sep = ""), 
+png(paste(results_files_dir, "plots/heatmap_top30.png", sep = ""), 
     width = 11.25, height = 7.5, res = 300, units = "in")
-draw(top_20_heatmap)
+draw(top_30_heatmap)
 dev.off()
 
 # Guarda el RDS de res para analisis tipo GSEA/RNAconditionCalc

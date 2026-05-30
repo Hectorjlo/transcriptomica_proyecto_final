@@ -1,2 +1,2 @@
-Upregulated: 1461
-Downregulated: 879
+Upregulated: 1137
+Downregulated: 693
