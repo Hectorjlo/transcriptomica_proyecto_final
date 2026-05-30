@@ -5,7 +5,7 @@ library(readr)
 
 # Carga los datos de DAVID
 david_data <- read_delim(
-    "DE_analysis/data/DAVID_files/DAVIDChartReport_upregulated_CC.csv",
+    "results/star/DAVID/DAVIDChartReport_DEG-up_2026-05-30_CC_Direct.csv",
     delim = ","
 )
 
@@ -42,7 +42,7 @@ grafico_burbujas <- ggplot(
 
 # Guarda el gráfico
 ggsave(
-    "DE_analysis/results/star/DE_analysis/DESeq2/paired_end/Functional_analysis/plots/GO_Bubble_Plot_upregulated_CC.png",
+    "results/star/DAVID/plots/GO_Bubble_Plot_upregulated_CC.png",
     plot = grafico_burbujas,
     width = 11.25,
     height = 7.5,
