@@ -1,4 +1,4 @@
-for file in results/{hisat2,star,salmon}/DE_analysis/{DESeq2,edgeR}/{paired_end,single_end}/*-*.txt; do
+for file in results/star/DESeq2/*-*.txt; do
 name=$(basename $file)
 output_path="${file%/$name}"
 output_name="${name%.txt}"
