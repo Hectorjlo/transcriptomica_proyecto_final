@@ -27,7 +27,6 @@ matrix_counts_path <- "results/star/feature_counts/counts_matrix.tsv"
 annotacion_file_path <- "results/star/feature_counts/gene_id.gene_length.tsv"
 gene_name_map_file_path <- "data/GENCODE_GRCh38.p13_104/gene_id.gene_name.txt"
 results_files_dir <- "results/star/DESeq2"
-from_pseudoalignment <- FALSE
 samples_table_path <- "data/GSE213001/extracted_samples.tsv"
 
 
