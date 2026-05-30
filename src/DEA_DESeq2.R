@@ -2,7 +2,7 @@
 ## Documentación
 
 ###
-# Uso: Rscript DEA_DESeq2.R <gene_counts_or_txi_file> <annotacion_file> <gene_map_file> <result_dir> 
+# Uso: Rscript DEA_DESeq2.R <matrix_counts_file> <annotacion_file> <gene_map_file> <result_dir> 
 ###
 
 # Desactiva el dispositivo PDF
@@ -60,17 +60,18 @@ suppressWarnings(
 # args <- parse_args(OptionParser(option_list = parser))
 
 # Obten los argumentos del paseo de la CLI
-# gene_counts_or_txi_path <- args$counts
+# matrix_counts_path <- args$counts
 # annotacion_file_path <- args$annotation
 # gene_name_map_file_path <- args$gene_map
 # results_files_dir <- args$results_dir
 # from_pseudoalignment <- args$from_pseudoalignment
 
-gene_counts_or_txi_path <- "results/star/feature_counts/counts_matrix.tsv"
-annotacion_file_path <- "data/GENCODE_GRCh38.p13_104/gene_id.length.tsv"
+matrix_counts_path <- "results/star/feature_counts/counts_matrix.tsv"
+annotacion_file_path <- "results/star/feature_counts/gene_id.gene_length.tsv"
 gene_name_map_file_path <- "data/GENCODE_GRCh38.p13_104/gene_id.gene_name.txt"
 results_files_dir <- "results/star/DESeq2"
 from_pseudoalignment <- FALSE
+samples_table_path <- "data/GSE213001/extracted_samples.tsv"
 
 
 ## Para el path de "results" elimina si encuentra a un "/"
@@ -80,49 +81,55 @@ results_files_dir <- gsub("/*$", "/", results_files_dir)
 # Lee los archivos de anotación y del genemap
 annotation <- read.delim(annotacion_file_path, row.names=1)
 gene_name_map <- read.delim(gene_name_map_file_path, header=FALSE, row.names=1)
+rownames(gene_name_map) <- gsub("[.][0-9]+","",rownames(gene_name_map))
 
-# Si es un objeto txi
-if (from_pseudoalignment) {
-    # Lee el objeto txi
-    gene_counts_or_txi <- readRDS(gene_counts_or_txi_path)
-    # Registra el nombre de cada SRR respecto a la condición
-    #!
-    condition <- c("male_24m_2", "male_24m_1", "male_3m_5", "male_24m_7", "male_3m_6", "male_3m_3", "male_24m_4")
-    # Renombra los nombres de las columnas
-    colnames(gene_counts_or_txi$abundance) <- condition
-    colnames(gene_counts_or_txi$counts) <- condition
-    colnames(gene_counts_or_txi$length) <- condition
-    # Reordena las columnas por edad
-    gene_counts_or_txi$abundance <- gene_counts_or_txi$abundance[ ,reordered]
-    gene_counts_or_txi$counts <- gene_counts_or_txi$counts[ ,reordered]
-    gene_counts_or_txi$length <- gene_counts_or_txi$length[ ,reordered]
-} else { # Si es una tabla de conteos
-    # Lee el archivo de conteos
-    gene_counts_or_txi <- read.delim(gene_counts_or_txi_path, row.names=1)
-}
+samples_table <- read.delim(samples_table_path)
+# 61 debido a que es la media de AGE
+samples_table$AGE[is.na(samples_table$AGE)] <- 61
+matrix_counts <- read.delim(matrix_counts_path, row.names=1)
+rownames(matrix_counts) <- gsub("[.][0-9]+","",rownames(matrix_counts))
+
+run_ids <- sub(".*(SRR[0-9]+).*", "\\1", colnames(matrix_counts))
+idx <- match(run_ids, samples_table$Run)
+
+
+colnames(matrix_counts) <- paste(
+  samples_table$diagnosis[idx],
+  samples_table$gender[idx],
+  samples_table$AGE[idx],
+  run_ids,
+  sep = "_"
+)
+
+diagnosis_order <- factor(
+  samples_table$diagnosis[idx],
+  levels = c("IPF", "NDC")
+)
+
+matrix_counts <- matrix_counts[, order(diagnosis_order)]
 
 # Generar la tabla de metadatos
-# Verifica con colnames(gene_counts_or_txi), comprueba la cabecera de los archivos
+# Verifica con colnames(matrix_counts), comprueba la cabecera de los archivos
 ## Para estos archivos es:
 ## "male_24m_1" "male_24m_2" "male_24m_4" "male_24m_7" "male_3m_3"  "male_3m_5"  "male_3m_6"
 ## Por cual, primero crea un factor con el mismo orden que la cabecera en "condition"
-condition <- factor(c(rep("IPF", 12), rep("NDC", 12)),
+condition <- factor(c(rep("IPF", 20), rep("NDC", 14)),
     levels = c("NDC", "IPF"))
+
+sex <- factor(stringr::str_extract(colnames(matrix_counts), "(?<=_)(male|female)(?=_)"),
+    levels = c("male", "female"))
+
+age <- stringr::str_extract(colnames(matrix_counts), "(?<=_)(\\d+|NA)(?=_)") |>
+  as.numeric()
 
 ## Además, un factor que por color refleje a cual de los cuatro grupos pertencen
 ## lightblue <- male_3m
 ## blue <- male_24m
-sample_color <- c(rep("lightblue", 12), rep("blue", 12))
-# Si es un objeto txi
-if (from_pseudoalignment) {
-    ## Por último los colnames() 
-    sample_names <- colnames(gene_counts_or_txi$counts)
-} else { # Si es una tabla de conteos
-    ## Por último los colnames() 
-    sample_names <- colnames(gene_counts_or_txi)
-}
+sample_color <- c(rep("blue", 12), rep("lightblue", 12))
+
+sample_names <- colnames(matrix_counts)
 # Con los valores anteriores genera la tabla de metadatos
-meta_data <- data.frame(sample_names, condition)
+meta_data <- data.frame(sample_names, condition, sex, age)
 ## Genera
 ##   sample_names condition  sex
 ## 1   male_24m_1 m24 male
@@ -147,11 +154,11 @@ meta_data <- meta_data %>%
 ## male_3m_5   m3 male
 ## male_3m_6   m3 male
 
-# Verifica que en los nombres de columnas en gene_counts_or_txi
+# Verifica que en los nombres de columnas en matrix_counts
 # esten el mismo orden que los nombred de filas en meta_data
-print("Verificación: colnames(gene_counts_or_txi) == rownames(meta_data)")
+print("Verificación: colnames(matrix_counts) == rownames(meta_data)")
 print(ifelse(
-    (all(colnames(gene_counts_or_txi) == rownames(meta_data))),
+    (all(colnames(matrix_counts) == rownames(meta_data))),
     "Ok",
     "Error"
 ))
@@ -163,21 +170,12 @@ print(ifelse(
 ## de manera más fina
 formula <- ~ 0 + condition
 
-# Si es un objeto txi
-if (from_pseudoalignment) {
-    # Utiliza la formula para objetos de tximport
-    dds <- DESeqDataSetFromTximport(
-        txi = gene_counts_or_txi, 
-        colData = meta_data, 
-        design = formula
-    )
-} else { # Utiliza la formula para una tabla de conteos
-    dds <- DESeqDataSetFromMatrix(
-        countData = round(gene_counts_or_txi),
-        colData = meta_data,
-        design = formula
-    )
-}
+
+dds <- DESeqDataSetFromMatrix(
+    countData = round(matrix_counts),
+    colData = meta_data,
+    design = formula
+)
 
 # Crea la matriz de diseño
 design <- model.matrix(formula)
@@ -199,13 +197,39 @@ rm(keep)
 ## convertir los datos a vst
 # Convierte a vst
 vsd <- vst(dds)
-# Genera el PCA plot
-PCA_plot <- plotPCA(vsd, intgroup = "condition") +  
+# Genera el PCA plot de condición
+PCA_condition <- plotPCA(vsd, intgroup = "condition") +  
     theme_minimal(base_size = 18, base_line_size = 1)
 
+# PCA por edad
+PCA_age <- plotPCA(vsd, intgroup = "age") +
+  theme_minimal(base_size = 18, base_line_size = 1)
+
+# PCA por sexo
+PCA_sex <- plotPCA(vsd, intgroup = "sex") +
+  theme_minimal(base_size = 18, base_line_size = 1)
+
+
+
 # Guarda el gráfico de PCA
-ggsave(filename = paste(results_files_dir, "plots/PCA_plot.png", sep = ""), 
-    plot = PCA_plot, 
+ggsave(filename = paste(results_files_dir, "plots/PCA_condition.png", sep = ""), 
+    plot = PCA_condition, 
+    dpi = 300, 
+    width = 11.25, 
+    height = 7.5,
+    create.dir = TRUE
+)
+
+ggsave(filename = paste(results_files_dir, "plots/PCA_age.png", sep = ""), 
+    plot = PCA_age, 
+    dpi = 300, 
+    width = 11.25, 
+    height = 7.5,
+    create.dir = TRUE
+)
+
+ggsave(filename = paste(results_files_dir, "plots/PCA_sex.png", sep = ""), 
+    plot = PCA_sex, 
     dpi = 300, 
     width = 11.25, 
     height = 7.5,
