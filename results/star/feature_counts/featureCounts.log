@@ -1,0 +1,282 @@
+
+        ==========     _____ _    _ ____  _____  ______          _____  
+        =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+          =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+            ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+              ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+        ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+	  v2.0.8
+
+//========================== featureCounts setting ===========================\\
+||                                                                            ||
+||             Input files : 34 BAM files                                     ||
+||                                                                            ||
+||                           output_SRR21498140_Aligned.out.bam               ||
+||                           output_SRR21498150_Aligned.out.bam               ||
+||                           output_SRR21498165_Aligned.out.bam               ||
+||                           output_SRR21498180_Aligned.out.bam               ||
+||                           output_SRR21498185_Aligned.out.bam               ||
+||                           output_SRR21498190_Aligned.out.bam               ||
+||                           output_SRR21498195_Aligned.out.bam               ||
+||                           output_SRR21498200_Aligned.out.bam               ||
+||                           output_SRR21498205_Aligned.out.bam               ||
+||                           output_SRR21498225_Aligned.out.bam               ||
+||                           output_SRR21498230_Aligned.out.bam               ||
+||                           output_SRR21498265_Aligned.out.bam               ||
+||                           output_SRR21498280_Aligned.out.bam               ||
+||                           output_SRR21498285_Aligned.out.bam               ||
+||                           output_SRR21498295_Aligned.out.bam               ||
+||                           output_SRR21498320_Aligned.out.bam               ||
+||                           output_SRR21498340_Aligned.out.bam               ||
+||                           output_SRR21498365_Aligned.out.bam               ||
+||                           output_SRR21498375_Aligned.out.bam               ||
+||                           output_SRR21498385_Aligned.out.bam               ||
+||                           output_SRR21498400_Aligned.out.bam               ||
+||                           output_SRR21498421_Aligned.out.bam               ||
+||                           output_SRR21498523_Aligned.out.bam               ||
+||                           output_SRR21498538_Aligned.out.bam               ||
+||                           output_SRR21498578_Aligned.out.bam               ||
+||                           output_SRR21498623_Aligned.out.bam               ||
+||                           output_SRR21498628_Aligned.out.bam               ||
+||                           output_SRR21498633_Aligned.out.bam               ||
+||                           output_SRR21498643_Aligned.out.bam               ||
+||                           output_SRR21498663_Aligned.out.bam               ||
+||                           output_SRR21498668_Aligned.out.bam               ||
+||                           output_SRR21498728_Aligned.out.bam               ||
+||                           output_SRR21498748_Aligned.out.bam               ||
+||                           output_SRR21498828_Aligned.out.bam               ||
+||                                                                            ||
+||             Output file : ft_counts.tsv                                    ||
+||                 Summary : ft_counts.tsv.summary                            ||
+||              Paired-end : no                                               ||
+||        Count read pairs : no                                               ||
+||              Annotation : gencode.v38.chr_patch_hapl_scaff.annotation. ... ||
+||      Dir for temp files : results/star/feature_counts                      ||
+||                                                                            ||
+||                 Threads : 24                                               ||
+||                   Level : meta-feature level                               ||
+||      Multimapping reads : not counted                                      ||
+|| Multi-overlapping reads : not counted                                      ||
+||   Min overlapping bases : 1                                                ||
+||                                                                            ||
+\\============================================================================//
+
+//================================= Running ==================================\\
+||                                                                            ||
+|| Load annotation file gencode.v38.chr_patch_hapl_scaff.annotation.gff3 ...  ||
+||    Features : 1619277                                                      ||
+||    Meta-features : 67005                                                   ||
+||    Chromosomes/contigs : 439                                               ||
+||                                                                            ||
+|| Process BAM file output_SRR21498140_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3284314                                              ||
+||    Successfully assigned alignments : 2972383 (90.5%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498150_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3153056                                              ||
+||    Successfully assigned alignments : 2756769 (87.4%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498165_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2422483                                              ||
+||    Successfully assigned alignments : 2099225 (86.7%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498180_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2095330                                              ||
+||    Successfully assigned alignments : 1853949 (88.5%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498185_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3480706                                              ||
+||    Successfully assigned alignments : 3120784 (89.7%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498190_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2894078                                              ||
+||    Successfully assigned alignments : 2580438 (89.2%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498195_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2832038                                              ||
+||    Successfully assigned alignments : 2440390 (86.2%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498200_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2853248                                              ||
+||    Successfully assigned alignments : 2380862 (83.4%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498205_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2732874                                              ||
+||    Successfully assigned alignments : 2502102 (91.6%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498225_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3095410                                              ||
+||    Successfully assigned alignments : 2724222 (88.0%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498230_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3233788                                              ||
+||    Successfully assigned alignments : 2847774 (88.1%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498265_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2640374                                              ||
+||    Successfully assigned alignments : 2278673 (86.3%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498280_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 4341450                                              ||
+||    Successfully assigned alignments : 3789700 (87.3%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498285_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 4061095                                              ||
+||    Successfully assigned alignments : 3464322 (85.3%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498295_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2163120                                              ||
+||    Successfully assigned alignments : 1863724 (86.2%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498320_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2935090                                              ||
+||    Successfully assigned alignments : 2598696 (88.5%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498340_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2729925                                              ||
+||    Successfully assigned alignments : 2360665 (86.5%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498365_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2789472                                              ||
+||    Successfully assigned alignments : 2520157 (90.3%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498375_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3191156                                              ||
+||    Successfully assigned alignments : 2816398 (88.3%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498385_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3067376                                              ||
+||    Successfully assigned alignments : 2706684 (88.2%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498400_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3118861                                              ||
+||    Successfully assigned alignments : 2718939 (87.2%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498421_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2863077                                              ||
+||    Successfully assigned alignments : 2509922 (87.7%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498523_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 4453950                                              ||
+||    Successfully assigned alignments : 3914822 (87.9%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498538_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3211051                                              ||
+||    Successfully assigned alignments : 2726031 (84.9%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498578_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3195459                                              ||
+||    Successfully assigned alignments : 2843434 (89.0%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498623_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3285526                                              ||
+||    Successfully assigned alignments : 3016977 (91.8%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498628_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2958479                                              ||
+||    Successfully assigned alignments : 2527874 (85.4%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498633_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3409301                                              ||
+||    Successfully assigned alignments : 2986909 (87.6%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498643_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3243163                                              ||
+||    Successfully assigned alignments : 2936620 (90.5%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498663_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3127266                                              ||
+||    Successfully assigned alignments : 2866533 (91.7%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498668_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 4087803                                              ||
+||    Successfully assigned alignments : 3566812 (87.3%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498728_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 2748034                                              ||
+||    Successfully assigned alignments : 2508196 (91.3%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498748_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3174916                                              ||
+||    Successfully assigned alignments : 2786889 (87.8%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Process BAM file output_SRR21498828_Aligned.out.bam...                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 3219697                                              ||
+||    Successfully assigned alignments : 2798578 (86.9%)                      ||
+||    Running time : 0.01 minutes                                             ||
+||                                                                            ||
+|| Write the final count table.                                               ||
+|| Write the read assignment summary.                                         ||
+||                                                                            ||
+|| Summary of counting results can be found in file "results/star/feature_co  ||
+|| unts/ft_counts.tsv.summary"                                                ||
+||                                                                            ||
+\\============================================================================//
+
