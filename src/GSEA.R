@@ -1,12 +1,12 @@
 # Carga librerías necesarias
 library(DESeq2)
-library(org.Mm.eg.db)
+library(org.Hs.eg.db)
 library(clusterProfiler)
 library(enrichplot)
 library(ggplot2)
 
 # Carga el objeto RDS generado del análisis diferencial
-res <- readRDS(file = "DE_analysis/results/star/DE_analysis/DESeq2/paired_end/results.rds")
+res <- readRDS(file = "results/star/DESeq2/results.rds")
 
 # Ordena de manera inversa por stat
 res <- res[order(-res$stat), ]
@@ -20,22 +20,16 @@ names(gene_list) <- rownames(res)
 gse <- gseGO(geneList = gene_list,
             ont = "BP", # Agrega la ontología "Biological Process"
             keyType = "ENSEMBL", # Formato ENSEMBL ID
-            OrgDb = "org.Mm.eg.db", # Base de datos de ratón
+            OrgDb = org.Hs.eg.db, # Base de datos de Humano
             eps = 1e-300 # No trunca el P-value hasta 1e-300
         )
 
 # Guarda el objeto RDS generado
-saveRDS(gse, file = "DE_analysis/results/star/DE_analysis/DESeq2/paired_end/Functional_analysis/gse.rds")
+saveRDS(gse, file = "results/star/GSEA/gse.rds")
 
 # Realiza el plot
 p <- gseaplot2(gse,
-               geneSetID = c(grep(
-                "osteoclast proliferation", 
-                as.data.frame(gse)$Description
-                ), # Busca a ese patrón retorna el índice
-                grep("negative regulation of osteoclast differentiation", 
-                as.data.frame(gse)$Description)
-                ),
+               geneSetID = c("GO:0002274", "GO:0030198"),
                title = "",
                base_size = 14,
                pvalue_table = TRUE, # Muestra la tabla de P-value
@@ -50,7 +44,7 @@ p[[1]] <- p[[1]] +  geom_hline( # Agrega una línea en y = 0
 )
 
 # Guarda el plot
-ggsave(filename = "DE_analysis/results/star/DE_analysis/DESeq2/paired_end/Functional_analysis/plots/GSEA_plot.png",
+ggsave(filename = "results/star/GSEA/plots/GSEA_plot.png",
     plot = p, 
     dpi = 1200, 
     width = 11.25, 
