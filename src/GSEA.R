@@ -29,12 +29,13 @@ saveRDS(gse, file = "results/star/GSEA/gse.rds")
 
 # Realiza el plot
 p <- gseaplot2(gse,
-               geneSetID = c("GO:0002274", "GO:0030198"),
+               geneSetID = c("GO:0030198", "GO:1901342"),
                title = "",
                base_size = 14,
                pvalue_table = TRUE, # Muestra la tabla de P-value
                pvalue_table_columns = c("NES", "p.adjust") # Agrega el valor NES
             )
+
 
 p[[1]] <- p[[1]] +  geom_hline( # Agrega una línea en y = 0
     yintercept = 0, 
